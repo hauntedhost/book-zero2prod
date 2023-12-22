@@ -1,3 +1,9 @@
-fn main() {
-    println!("Hello, world!");
+use zero2prod::run;
+use std::net::TcpListener;
+
+#[tokio::main]
+async fn main() -> std::io::Result<()> {
+    // TODO: accept port cli option
+    let listener = TcpListener::bind("127.0.0.1:8000").expect("Failed to bind to port");
+    run(listener)?.await
 }
