@@ -12,14 +12,17 @@ path = "src/main.rs"
 
 [dependencies]
 actix-web = "4.4.0"
-serde = { version = "^1", features = ["derive"] }
-tokio = { version = "^1.30", features = ["macros", "rt-multi-thread"] }
+chrono = "0.4.31"
+config = "0.13.4"
+serde = { version = "1", features = ["derive"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+uuid = { version = "1", features = ["std", "v4"] }
 
 [dependencies.sqlx]
-version = "0.5.7"
+version = "0.7.3"
 default-features = false
 features = [
-  "runtime-actix-rustls",
+  "runtime-tokio-rustls",
   "macros",
   "postgres",
   "uuid",
