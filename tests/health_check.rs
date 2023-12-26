@@ -1,10 +1,25 @@
+use once_cell::sync::Lazy;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
 use uuid::Uuid;
 use zero2prod::{
     config::{get_config, DatabaseSettings},
     startup,
+    telemetry::{get_subscriber, init_subscriber},
 };
+
+static TRACING: Lazy<()> = Lazy::new(|| {
+    let name = "test".to_string();
+    let env_filter = "info".to_string();
+
+    if std::env::var("TEST_LOG").is_ok() {
+        let subscriber = get_subscriber(name, env_filter, std::io::stdout);
+        init_subscriber(subscriber);
+    } else {
+        let subscriber = get_subscriber("test".into(), "debug".into(), std::io::sink);
+        init_subscriber(subscriber);
+    }
+});
 
 pub struct TestApp {
     pub address: String,
@@ -80,14 +95,16 @@ async fn subscribe_returns_400_when_data_is_missing() {
 }
 
 async fn spawn_app() -> TestApp {
+    Lazy::force(&TRACING);
+
     let mut config = get_config().expect("Failed to read config");
+    config.database.name = Uuid::new_v4().to_string();
+
+    let db_pool = create_new_test_db_pool(&config.database).await;
 
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
     let port = listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);
-
-    config.database.name = Uuid::new_v4().to_string();
-    let db_pool = create_new_test_db_pool(&config.database).await;
 
     let server = startup::run(listener, db_pool.clone()).expect("Failed to bind address");
     let _ = tokio::spawn(server);
