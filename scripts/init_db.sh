@@ -11,19 +11,25 @@ if ! [ -x "$(command -v sqlx)" ]; then
   exit 1
 fi
 
-if [[ -z "${SKIP_DOCKER}" ]]; then
-  docker run \
-    -e POSTGRES_USER=${DB_USER} \
-    -e POSTGRES_PASSWORD=${DB_PASSWORD} \
-    -e POSTGRES_DB=${DB_NAME} \
-    -p "${DB_PORT}":5432 \
-    -d postgres \
-    postgres -N 1000
-fi
+docker ps --quiet --filter name=zero2prod | grep --quiet . \
+  && (docker logs zero2prod; docker attach zero2prod) \
+  || docker run \
+    --env POSTGRES_USER=${DB_USER} \
+    --env POSTGRES_PASSWORD=${DB_PASSWORD} \
+    --env POSTGRES_DB=${DB_NAME} \
+    --publish "${DB_PORT}":5432 \
+    --name zero2prod \
+    postgres --max_connections=1000
 
 # Keep pinging Postgres until it's ready to accept commands
 export PGPASSWORD="${DB_PASSWORD}"
-until psql -h "${DB_HOST}" -U "${DB_USER}" -p "${DB_PORT}" -d "postgres" -c '\q'; do
+until psql \
+  --host="${DB_HOST}" \
+  --username="${DB_USER}" \
+  --port="${DB_PORT}" \
+  --dbname="postgres" \
+  --command='\q';
+do
   >&2 echo "Postgres is still unavailable - sleeping"
   sleep 1
 done

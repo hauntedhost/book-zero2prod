@@ -1,0 +1,5 @@
+procs:
+  postgres:
+    shell: "./scripts/init_db.sh"
+  psql:
+    shell: "./scripts/psql.sh"
