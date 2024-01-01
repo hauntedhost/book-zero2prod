@@ -25,6 +25,7 @@ tracing-subscriber = { version = "0.3.18", features = [
 serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
 uuid = { version = "1", features = ["std", "v4"] }
+secrecy = { version = "0.8.0", features = ["serde"] }
 
 [dependencies.sqlx]
 version = "0.7.3"
