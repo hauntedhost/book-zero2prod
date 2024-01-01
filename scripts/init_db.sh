@@ -2,24 +2,29 @@
 set -eo pipefail
 
 if ! [ -x "$(command -v psql)" ]; then
-  echo >&2 "Error: psql is not installed."
+  echo >&2 "🦀 Error: psql is not installed"
   exit 1
 fi
 
 if ! [ -x "$(command -v sqlx)" ]; then
-  echo >&2 "Error: sqlx is not installed."
+  echo >&2 "🦀 Error: sqlx is not installed"
   exit 1
 fi
 
-docker ps --quiet --filter name=zero2prod | grep --quiet . \
-  && (docker logs zero2prod; docker attach zero2prod) \
-  || docker run \
+if [[ -z "${SKIP_DOCKER}" ]]; then
+  echo >&2 "🦀 Starting Postgres container ..."
+  docker run \
     --env POSTGRES_USER=${DB_USER} \
     --env POSTGRES_PASSWORD=${DB_PASSWORD} \
     --env POSTGRES_DB=${DB_NAME} \
     --publish "${DB_PORT}":5432 \
     --name zero2prod \
-    postgres --max_connections=1000
+    --detach \
+    postgres --max_connections=1000 \
+    > /dev/null 2>&1
+fi
+
+echo >&2 "🦀 Container 'zero2prod' is up and running 😎"
 
 # Keep pinging Postgres until it's ready to accept commands
 export PGPASSWORD="${DB_PASSWORD}"
@@ -28,15 +33,16 @@ until psql \
   --username="${DB_USER}" \
   --port="${DB_PORT}" \
   --dbname="postgres" \
-  --command='\q';
+  --command='\q' \
+  > /dev/null 2>&1;
 do
-  >&2 echo "Postgres is still unavailable - sleeping"
+  echo >&2 "🦀 Waiting for Postgres ..."
   sleep 1
 done
 
->&2 echo "Postgres is up and running on port ${DB_PORT}!"
+echo >&2 "🦀 Postgres is up and running on port ${DB_PORT} 😎"
 
 sqlx database create
 sqlx migrate run
 
->&2 echo "Postgres has been migrated, ready to go!"
+echo >&2 "🦀 Postgres migrations complete 🎉"
