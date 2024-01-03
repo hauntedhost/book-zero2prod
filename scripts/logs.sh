@@ -7,4 +7,4 @@
 
 logfile="${1:-logs/dev.log}"
 tail -f $logfile | \
-  jq -r '"\(.time)\t\(.["otel.name"] // .msg)\t\(.request_id // "∅")"'
+  jq -r '"\(.time)\t\(.["otel.name"] // .msg)\t\(.request_id // "")"'

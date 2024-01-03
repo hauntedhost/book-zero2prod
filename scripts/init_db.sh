@@ -18,10 +18,9 @@ if [[ -z "${SKIP_DOCKER}" ]]; then
     --env POSTGRES_PASSWORD=${DB_PASSWORD} \
     --env POSTGRES_DB=${DB_NAME} \
     --publish "${DB_PORT}":5432 \
-    --name zero2prod \
     --detach \
-    postgres --max_connections=1000 \
-    > /dev/null 2>&1
+    postgres \
+    postgres --max_connections=1000
 fi
 
 echo >&2 "🦀 Container 'zero2prod' is up and running 😎"
