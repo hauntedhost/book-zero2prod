@@ -1,0 +1,8 @@
+logs/
+migrations/
+scripts/
+target/
+tests/
+tmp/
+.env
+Dockerfile
