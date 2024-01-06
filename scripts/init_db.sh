@@ -14,10 +14,10 @@ fi
 if [[ -z "${SKIP_DOCKER}" ]]; then
   echo >&2 "🦀 Starting Postgres container ..."
   docker run \
-    --env POSTGRES_USER=${DB_USER} \
-    --env POSTGRES_PASSWORD=${DB_PASSWORD} \
-    --env POSTGRES_DB=${DB_NAME} \
-    --publish "${DB_PORT}":5432 \
+    --env POSTGRES_USER=${PGUSER} \
+    --env POSTGRES_PASSWORD=${PGPASSWORD} \
+    --env POSTGRES_DB=${PGDATABASE} \
+    --publish "${PGPORT}":5432 \
     --detach \
     postgres \
     postgres --max_connections=1000
@@ -26,11 +26,10 @@ fi
 echo >&2 "🦀 Container 'zero2prod' is up and running 😎"
 
 # Keep pinging Postgres until it's ready to accept commands
-export PGPASSWORD="${DB_PASSWORD}"
 until psql \
-  --host="${DB_HOST}" \
-  --username="${DB_USER}" \
-  --port="${DB_PORT}" \
+  --username="${PGUSER}" \
+  --host="${PGHOST}" \
+  --port="${PGPORT}" \
   --dbname="postgres" \
   --command='\q' \
   > /dev/null 2>&1;
