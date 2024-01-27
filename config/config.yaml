@@ -8,3 +8,7 @@ database:
   port: 5433
   name: "newsletter"
   require_ssl: false
+email_client:
+  base_url: "localhost"
+  auth_token: "testing"
+  sender_email: "test@gmail.com"

@@ -134,6 +134,14 @@ async fn spawn_app() -> TestApp {
     let port = listener.local_addr().unwrap().port();
     let address = format!("http://127.0.0.1:{}", port);
 
+    let sender_email = config.email_client.sender().expect("Invalid sender email address.");
+
+    let email_client = EmailClient::new(
+        config.email_client.base_url,
+        config.email_client.auth_token,
+        sender_email,
+    );
+
     let server = startup::run(listener, db_pool.clone()).expect("Failed to bind address");
     let _ = tokio::spawn(server);
 
